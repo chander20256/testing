@@ -2,17 +2,25 @@
 
 import { useState } from "react";
 
-export default function ShortlinkCard({ link }) {
+export default function ShortlinkCard(props) {
 
   const [loading, setLoading] =
     useState(false);
 
   /*
-    prevent undefined crash
+    FULL SAFE CHECK
   */
 
+  const link = props?.link;
+
   if (!link) {
-    return null;
+
+    return (
+      <div className="text-white">
+        Invalid Shortlink Data
+      </div>
+    );
+
   }
 
   const handleOpen = async () => {
@@ -77,20 +85,17 @@ export default function ShortlinkCard({ link }) {
         border-zinc-800
         rounded-2xl
         p-6
-        hover:border-green-500
-        transition-all
-        duration-300
       "
     >
 
       <h2 className="text-2xl font-bold">
-        {link.title}
+        {link.title || "No Title"}
       </h2>
 
       <p className="text-zinc-500 mt-3">
         Reward:
         {" "}
-        {link.reward}
+        {link.reward || 0}
         {" "}
         Points
       </p>
@@ -98,7 +103,7 @@ export default function ShortlinkCard({ link }) {
       <p className="text-zinc-500 mt-1">
         Time:
         {" "}
-        {link.time}
+        {link.time || "N/A"}
       </p>
 
       <button
@@ -108,13 +113,9 @@ export default function ShortlinkCard({ link }) {
           w-full
           mt-6
           bg-green-500
-          hover:bg-green-400
-          disabled:opacity-50
           text-black
           py-3
           rounded-xl
-          font-semibold
-          transition-all
         "
       >
         {
