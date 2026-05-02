@@ -9,7 +9,6 @@ import User from "../models/User.js";
 | Start Shortlink
 |--------------------------------------------------------------------------
 */
-
 export const startShortlink = async (
   req,
   res
@@ -39,36 +38,65 @@ export const startShortlink = async (
 
     await ShortlinkSession.create({
       sessionId,
-
-      userId:
-        user._id.toString(),
-
+      userId: user._id.toString(),
       reward: 20,
     });
 
     const callbackUrl =
       `https://testing-9858.onrender.com/api/shortlink/complete/${sessionId}`;
 
+    console.log(
+      "CALLBACK URL:"
+    );
+
+    console.log(callbackUrl);
+
     const apiUrl =
       `https://shrinkme.io/api?api=${process.env.SHRINKME_API}&url=${encodeURIComponent(callbackUrl)}&format=text`;
+
+    console.log(
+      "API URL:"
+    );
+
+    console.log(apiUrl);
 
     const response =
       await axios.get(apiUrl);
 
+    console.log(
+      "SHRINKME RESPONSE:"
+    );
+
+    console.log(response.data);
+
+    if (!response.data) {
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Empty response from ShrinkMe",
+      });
+
+    }
+
     return res.status(200).json({
       success: true,
-
-      shortlink:
-        response.data,
+      shortlink: response.data,
     });
 
   } catch (error) {
 
-    console.log(error);
+    console.log(
+      "SHORTLINK ERROR:"
+    );
+
+    console.log(
+      error.response?.data ||
+      error.message
+    );
 
     return res.status(500).json({
       success: false,
-
       message:
         "Failed to generate shortlink",
     });
@@ -76,86 +104,3 @@ export const startShortlink = async (
   }
 
 };
-
-/*
-|--------------------------------------------------------------------------
-| Complete Shortlink
-|--------------------------------------------------------------------------
-*/
-
-export const completeShortlink =
-  async (req, res) => {
-
-    try {
-
-      const { sessionId } =
-        req.params;
-
-      const session =
-        await ShortlinkSession.findOne({
-          sessionId,
-        });
-
-      if (!session) {
-
-        return res
-          .status(404)
-          .send(
-            "Invalid session"
-          );
-
-      }
-
-      if (
-        session.status ===
-        "completed"
-      ) {
-
-        return res.send(
-          "Reward already claimed"
-        );
-
-      }
-
-      const user =
-        await User.findById(
-          session.userId
-        );
-
-      if (!user) {
-
-        return res
-          .status(404)
-          .send(
-            "User not found"
-          );
-
-      }
-
-      user.points +=
-        session.reward;
-
-      await user.save();
-
-      session.status =
-        "completed";
-
-      await session.save();
-
-      return res.redirect(
-        "https://revadoo.vercel.app/#/shortlinks"
-      );
-
-    } catch (error) {
-
-      console.log(error);
-
-      return res
-        .status(500)
-        .send(
-          "Server Error"
-        );
-
-    }
-
-  };
