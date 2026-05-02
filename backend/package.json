@@ -1,0 +1,35 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Revedoo Shortlink Backend",
+  "main": "server.js",
+  "type": "module",
+
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+
+  "keywords": [
+    "express",
+    "mongodb",
+    "shortlinks",
+    "backend",
+    "revedoo"
+  ],
+
+  "author": "",
+  "license": "ISC",
+
+  "dependencies": {
+    "axios": "^1.15.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.6.1"
+  },
+
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
