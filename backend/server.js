@@ -31,77 +31,11 @@ app.use(express.json());
 
 /*
 |--------------------------------------------------------------------------
-| CORS FIX
+| CORS
 |--------------------------------------------------------------------------
 */
 
-const allowedOrigins = [
-  "http://localhost:5173",
-
-  "https://revadoo.vercel.app",
-
-  "https://revadoo.onrender.com",
-];
-
-app.use(
-  cors({
-    origin: function (
-      origin,
-      callback
-    ) {
-
-      /*
-        allow requests with no origin
-      */
-
-      if (!origin) {
-
-        return callback(
-          null,
-          true
-        );
-
-      }
-
-      if (
-        allowedOrigins.includes(
-          origin
-        )
-      ) {
-
-        callback(null, true);
-
-      } else {
-
-        callback(
-          new Error(
-            "Not allowed by CORS"
-          )
-        );
-
-      }
-
-    },
-
-    methods: [
-      "GET",
-      "POST",
-      "PUT",
-      "DELETE",
-      "OPTIONS",
-    ],
-
-    credentials: true,
-  })
-);
-
-/*
-|--------------------------------------------------------------------------
-| Handle Preflight
-|--------------------------------------------------------------------------
-*/
-
-app.options("*", cors());
+app.use(cors());
 
 /*
 |--------------------------------------------------------------------------
@@ -121,7 +55,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| Test Route
+| Health Route
 |--------------------------------------------------------------------------
 */
 
@@ -129,7 +63,6 @@ app.get("/", (req, res) => {
 
   res.status(200).json({
     success: true,
-
     message:
       "Revedoo Backend Running Successfully",
   });
@@ -138,7 +71,7 @@ app.get("/", (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
-| Start Server
+| Server
 |--------------------------------------------------------------------------
 */
 
