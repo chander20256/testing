@@ -1,16 +1,20 @@
 /* src/App.jsx */
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  HashRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import LandingPage from "./pages/LandingPage";
 import ShortlinksPage from "./pages/ShortlinksPage";
 
-
 export default function App() {
+
   return (
     <div className="min-h-screen bg-black text-white">
 
-      <BrowserRouter>
+      <HashRouter>
 
         <Routes>
 
@@ -26,7 +30,7 @@ export default function App() {
 
         </Routes>
 
-      </BrowserRouter>
+      </HashRouter>
 
     </div>
   );
