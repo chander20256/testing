@@ -1,8 +1,25 @@
 import { useState } from "react";
 
-export default function ShortlinkCard({ link = {} }) {
+export default function ShortlinkCard(props) {
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
+
+  /*
+    SAFE LINK EXTRACTION
+  */
+
+  const link =
+    props?.link || {};
+
+  const title =
+    link?.title || "Shortlink";
+
+  const reward =
+    link?.reward || 0;
+
+  const time =
+    link?.time || "N/A";
 
   const handleOpen = async () => {
 
@@ -15,12 +32,14 @@ export default function ShortlinkCard({ link = {} }) {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
         }
       );
 
-      const data = await res.json();
+      const data =
+        await res.json();
 
       console.log(data);
 
@@ -56,6 +75,7 @@ export default function ShortlinkCard({ link = {} }) {
   };
 
   return (
+
     <div
       className="
         bg-zinc-900
@@ -67,13 +87,13 @@ export default function ShortlinkCard({ link = {} }) {
     >
 
       <h2 className="text-2xl font-bold">
-        {link?.title || "Shortlink"}
+        {title}
       </h2>
 
       <p className="text-zinc-500 mt-3">
         Reward:
         {" "}
-        {link?.reward || 0}
+        {reward}
         {" "}
         Points
       </p>
@@ -81,7 +101,7 @@ export default function ShortlinkCard({ link = {} }) {
       <p className="text-zinc-500 mt-1">
         Time:
         {" "}
-        {link?.time || "N/A"}
+        {time}
       </p>
 
       <button
@@ -97,13 +117,17 @@ export default function ShortlinkCard({ link = {} }) {
           font-semibold
         "
       >
+
         {
           loading
             ? "Generating..."
             : "Open Shortlink"
         }
+
       </button>
 
     </div>
+
   );
+
 }
