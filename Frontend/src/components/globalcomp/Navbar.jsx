@@ -1,120 +1,142 @@
-/* frontend/src/components/shortlinks/ShortlinkCard.jsx */
+/* src/components/globalcomp/Navbar.jsx */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function ShortlinkCard({ link }) {
+export default function Navbar() {
+
+  const [points, setPoints] =
+    useState(0);
 
   const [loading, setLoading] =
-    useState(false);
+    useState(true);
 
-  const handleOpen = async () => {
+  useEffect(() => {
 
-    try {
+    const fetchPoints = async () => {
 
-      setLoading(true);
+      try {
 
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/shortlink/start`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-        }
-      );
-
-      const data =
-        await res.json();
-
-      console.log(data);
-
-      if (
-        data.success &&
-        data.shortlink
-      ) {
-
-        window.location.href =
-          data.shortlink;
-
-      } else {
-
-        alert(
-          data.message ||
-          "Failed to generate shortlink"
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/user/points`
         );
+
+        const data =
+          await res.json();
+
+        console.log(
+          "POINTS RESPONSE:",
+          data
+        );
+
+        /*
+          SAFE CHECK
+        */
+
+        if (
+          data &&
+          typeof data.points ===
+            "number"
+        ) {
+
+          setPoints(
+            data.points
+          );
+
+        } else {
+
+          setPoints(0);
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        setPoints(0);
+
+      } finally {
+
+        setLoading(false);
 
       }
 
-    } catch (error) {
+    };
 
-      console.error(error);
+    fetchPoints();
 
-      alert("Server Error");
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
+  }, []);
 
   return (
-    <div
+    <nav
       className="
-        bg-zinc-900
-        border
+        w-full
+        border-b
         border-zinc-800
-        rounded-2xl
-        p-6
-        hover:border-green-500
-        transition-all
-        duration-300
+        bg-black
       "
     >
 
-      <h2 className="text-2xl font-bold">
-        {link.title}
-      </h2>
-
-      <p className="text-zinc-500 mt-3">
-        Reward:
-        {" "}
-        {link.reward}
-        {" "}
-        Points
-      </p>
-
-      <p className="text-zinc-500 mt-1">
-        Time:
-        {" "}
-        {link.time}
-      </p>
-
-      <button
-        onClick={handleOpen}
-        disabled={loading}
+      <div
         className="
-          w-full
-          mt-6
-          bg-green-500
-          hover:bg-green-400
-          disabled:opacity-50
-          text-black
-          py-3
-          rounded-xl
-          font-semibold
-          transition-all
+          max-w-7xl
+          mx-auto
+          px-6
+          h-20
+          flex
+          items-center
+          justify-between
         "
       >
-        {
-          loading
-            ? "Generating..."
-            : "Open Shortlink"
-        }
-      </button>
 
-    </div>
+        <div>
+
+          <h1
+            className="
+              text-2xl
+              font-bold
+              text-white
+            "
+          >
+            Revedoo
+          </h1>
+
+          <p className="text-zinc-500 text-sm">
+            Reward Platform
+          </p>
+
+        </div>
+
+        <div
+          className="
+            bg-zinc-900
+            px-5
+            py-3
+            rounded-xl
+          "
+        >
+
+          <p className="text-zinc-500 text-xs">
+            Total Points
+          </p>
+
+          <h2
+            className="
+              text-green-400
+              font-bold
+              text-xl
+            "
+          >
+            {
+              loading
+                ? "..."
+                : points
+            }
+          </h2>
+
+        </div>
+
+      </div>
+
+    </nav>
   );
 }
