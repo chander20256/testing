@@ -1,128 +1,120 @@
-/* frontend/src/components/globalcomp/Navbar.jsx */
+/* frontend/src/components/shortlinks/ShortlinkCard.jsx */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-export default function Navbar() {
+export default function ShortlinkCard({ link }) {
 
-  const [points, setPoints] = useState(null);
+  const [loading, setLoading] =
+    useState(false);
 
-  useEffect(() => {
+  const handleOpen = async () => {
 
-    const fetchPoints = async () => {
-      try {
+    try {
 
-        const res = await fetch(
-          "http://localhost:5000/api/user/points"
+      setLoading(true);
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/shortlink/start`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+        }
+      );
+
+      const data =
+        await res.json();
+
+      console.log(data);
+
+      if (
+        data.success &&
+        data.shortlink
+      ) {
+
+        window.location.href =
+          data.shortlink;
+
+      } else {
+
+        alert(
+          data.message ||
+          "Failed to generate shortlink"
         );
 
-        const data = await res.json();
-
-        setPoints(data.points);
-
-      } catch (error) {
-        console.error(error);
       }
-    };
 
-    fetchPoints();
+    } catch (error) {
 
-  }, []);
+      console.error(error);
+
+      alert("Server Error");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
 
   return (
-    <nav
+    <div
       className="
-        sticky
-        top-0
-        z-50
-        w-full
-        border-b
+        bg-zinc-900
+        border
         border-zinc-800
-        bg-black/80
-        backdrop-blur-xl
+        rounded-2xl
+        p-6
+        hover:border-green-500
+        transition-all
+        duration-300
       "
     >
-      <div
+
+      <h2 className="text-2xl font-bold">
+        {link.title}
+      </h2>
+
+      <p className="text-zinc-500 mt-3">
+        Reward:
+        {" "}
+        {link.reward}
+        {" "}
+        Points
+      </p>
+
+      <p className="text-zinc-500 mt-1">
+        Time:
+        {" "}
+        {link.time}
+      </p>
+
+      <button
+        onClick={handleOpen}
+        disabled={loading}
         className="
-          max-w-7xl
-          mx-auto
-          px-4
-          sm:px-6
-          h-20
-          flex
-          items-center
-          justify-between
+          w-full
+          mt-6
+          bg-green-500
+          hover:bg-green-400
+          disabled:opacity-50
+          text-black
+          py-3
+          rounded-xl
+          font-semibold
+          transition-all
         "
       >
+        {
+          loading
+            ? "Generating..."
+            : "Open Shortlink"
+        }
+      </button>
 
-        {/* Logo */}
-
-        <div>
-
-          <h1
-            className="
-              text-2xl
-              font-bold
-              tracking-wide
-            "
-          >
-            Revedoo
-          </h1>
-
-          <p className="text-xs text-zinc-500">
-            Rewarded Shortlinks
-          </p>
-
-        </div>
-
-        {/* Dynamic Points */}
-
-        <div
-          className="
-            flex
-            items-center
-            gap-3
-            bg-zinc-900
-            border
-            border-zinc-800
-            px-5
-            py-3
-            rounded-2xl
-          "
-        >
-
-          <div
-            className="
-              w-3
-              h-3
-              rounded-full
-              bg-green-500
-              animate-pulse
-            "
-          />
-
-          <div>
-
-            <p className="text-xs text-zinc-500">
-              Total Points
-            </p>
-
-            <h2
-              className="
-                text-lg
-                font-bold
-                text-green-400
-              "
-            >
-              {points !== null
-                ? points
-                : "Loading..."}
-            </h2>
-
-          </div>
-
-        </div>
-
-      </div>
-    </nav>
+    </div>
   );
 }

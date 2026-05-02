@@ -6,263 +6,149 @@ import axios from "axios";
 import ShortlinkSession from "../models/ShortlinkSession.js";
 import User from "../models/User.js";
 
-/*
-|--------------------------------------------------------------------------
-| Start Shortlink
-|--------------------------------------------------------------------------
-*/
+export const startShortlink =
+  async (req, res) => {
 
-export const startShortlink = async (req, res) => {
+    try {
 
-  try {
+      let user =
+        await User.findOne({
+          username: "demoUser",
+        });
 
-    /*
-      demo user
-    */
+      if (!user) {
 
-    let user = await User.findOne({
-      username: "demoUser",
-    });
+        user =
+          await User.create({
+            username:
+              "demoUser",
+            points: 0,
+          });
 
-    if (!user) {
+      }
 
-      user = await User.create({
-        username: "demoUser",
-        points: 0,
-      });
+      const sessionId =
+        crypto
+          .randomBytes(16)
+          .toString("hex");
 
-    }
-
-    /*
-      create session id
-    */
-
-    const sessionId =
-      crypto.randomBytes(16).toString("hex");
-
-    /*
-      save session
-    */
-
-    await ShortlinkSession.create({
-      sessionId,
-      userId: user._id.toString(),
-      reward: 20,
-    });
-
-    /*
-      IMPORTANT
-
-      localhost usually fails with shortlink APIs
-
-      use frontend or deployed callback later
-    */
-
-    const callbackUrl =
-      `http://localhost:5000/api/shortlink/complete/${sessionId}`;
-
-    console.log(
-      "CALLBACK URL:"
-    );
-
-    console.log(callbackUrl);
-
-    /*
-      shrinkme api
-    */
-
-    const apiUrl =
-      `https://shrinkme.io/api?api=${process.env.SHRINKME_API}&url=${encodeURIComponent(callbackUrl)}&format=text`;
-
-    console.log(
-      "API URL:"
-    );
-
-    console.log(apiUrl);
-
-    /*
-      request
-    */
-
-    const response =
-      await axios.get(apiUrl);
-
-    console.log(
-      "SHRINKME RESPONSE:"
-    );
-
-    console.log(response.data);
-
-    /*
-      success
-    */
-
-    return res.status(200).json({
-      success: true,
-      shortlink: response.data,
-    });
-
-  } catch (error) {
-
-    console.log(
-      "======================"
-    );
-
-    console.log(
-      "SHORTLINK ERROR"
-    );
-
-    console.log(
-      "======================"
-    );
-
-    console.log(
-      "FULL ERROR:"
-    );
-
-    console.log(error);
-
-    console.log(
-      "----------------------"
-    );
-
-    console.log(
-      "ERROR RESPONSE:"
-    );
-
-    console.log(
-      error.response?.data
-    );
-
-    console.log(
-      "----------------------"
-    );
-
-    console.log(
-      "ERROR MESSAGE:"
-    );
-
-    console.log(
-      error.message
-    );
-
-    console.log(
-      "======================"
-    );
-
-    return res.status(500).json({
-      success: false,
-      message:
-        "Failed to generate shortlink",
-    });
-
-  }
-
-};
-
-/*
-|--------------------------------------------------------------------------
-| Complete Shortlink
-|--------------------------------------------------------------------------
-*/
-
-export const completeShortlink = async (
-  req,
-  res
-) => {
-
-  try {
-
-    const { sessionId } =
-      req.params;
-
-    const session =
-      await ShortlinkSession.findOne({
+      await ShortlinkSession.create({
         sessionId,
+
+        userId:
+          user._id.toString(),
+
+        reward: 20,
       });
 
-    if (!session) {
+      /*
+        IMPORTANT
+      */
 
-      return res.status(404).send(
-        "Invalid session"
-      );
+      const callbackUrl =
+        `https://testing-9858.onrender.com/api/shortlink/complete/${sessionId}`;
 
-    }
+      const apiUrl =
+        `https://shrinkme.io/api?api=${process.env.SHRINKME_API}&url=${encodeURIComponent(callbackUrl)}&format=text`;
 
-    /*
-      prevent duplicate rewards
-    */
+      const response =
+        await axios.get(apiUrl);
 
-    if (
-      session.status ===
-      "completed"
-    ) {
+      return res.status(200).json({
+        success: true,
 
-      return res.send(
-        "Reward already claimed"
-      );
+        shortlink:
+          response.data,
+      });
 
-    }
+    } catch (error) {
 
-    /*
-      get user
-    */
+      console.log(error);
 
-    const user =
-      await User.findById(
-        session.userId
-      );
+      return res.status(500).json({
+        success: false,
 
-    if (!user) {
-
-      return res.status(404).send(
-        "User not found"
-      );
+        message:
+          "Failed to generate shortlink",
+      });
 
     }
 
-    /*
-      add points
-    */
+  };
 
-    user.points +=
-      session.reward;
+export const completeShortlink =
+  async (req, res) => {
 
-    await user.save();
+    try {
 
-    /*
-      update session
-    */
+      const { sessionId } =
+        req.params;
 
-    session.status =
-      "completed";
+      const session =
+        await ShortlinkSession.findOne({
+          sessionId,
+        });
 
-    await session.save();
+      if (!session) {
 
-    console.log(
-      "POINTS ADDED"
-    );
+        return res
+          .status(404)
+          .send(
+            "Invalid session"
+          );
 
-    /*
-      redirect frontend
-    */
+      }
 
-    return res.redirect(
-      "http://localhost:5173/shortlinks"
-    );
+      if (
+        session.status ===
+        "completed"
+      ) {
 
-  } catch (error) {
+        return res.send(
+          "Reward already claimed"
+        );
 
-    console.log(
-      "COMPLETE ERROR:"
-    );
+      }
 
-    console.log(error);
+      const user =
+        await User.findById(
+          session.userId
+        );
 
-    return res.status(500).send(
-      "Server Error"
-    );
+      if (!user) {
 
-  }
+        return res
+          .status(404)
+          .send(
+            "User not found"
+          );
 
-};
+      }
+
+      user.points +=
+        session.reward;
+
+      await user.save();
+
+      session.status =
+        "completed";
+
+      await session.save();
+
+      return res.redirect(
+        "https://revadoo.onrender.com/shortlinks"
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+      return res
+        .status(500)
+        .send(
+          "Server Error"
+        );
+
+    }
+
+  };
