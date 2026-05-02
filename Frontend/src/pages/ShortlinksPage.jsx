@@ -1,7 +1,7 @@
 /* src/pages/ShortlinksPage.jsx */
 
 import Navbar from "../components/globalcomp/Navbar";
-// import ShortlinkCard from "../components/shortlinks/ShortlinkCard";
+import ShortlinkCard from "../components/shortlinks/ShortlinkCard";
 
 export default function ShortlinksPage() {
 
@@ -134,12 +134,12 @@ export default function ShortlinksPage() {
               gap-6
             "
           >
-            {/* {shortlinks.map((link) => (
+            {shortlinks.map((link) => (
               <ShortlinkCard
                 key={link.id}
                 link={link}
               />
-            ))} */}
+            ))}
           </div>
 
         </div>
