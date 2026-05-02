@@ -1,11 +1,5 @@
 /* backend/controllers/shortlinkController.js */
 
-import crypto from "crypto";
-import axios from "axios";
-
-import ShortlinkSession from "../models/ShortlinkSession.js";
-import User from "../models/User.js";
-
 export const startShortlink =
   async (req, res) => {
 
@@ -20,8 +14,7 @@ export const startShortlink =
 
         user =
           await User.create({
-            username:
-              "demoUser",
+            username: "demoUser",
             points: 0,
           });
 
@@ -34,16 +27,9 @@ export const startShortlink =
 
       await ShortlinkSession.create({
         sessionId,
-
-        userId:
-          user._id.toString(),
-
+        userId: user._id.toString(),
         reward: 20,
       });
-
-      /*
-        IMPORTANT
-      */
 
       const callbackUrl =
         `https://testing-9858.onrender.com/api/shortlink/complete/${sessionId}`;
@@ -51,103 +37,56 @@ export const startShortlink =
       const apiUrl =
         `https://shrinkme.io/api?api=${process.env.SHRINKME_API}&url=${encodeURIComponent(callbackUrl)}&format=text`;
 
+      console.log(
+        "Generating Shortlink..."
+      );
+
       const response =
         await axios.get(apiUrl);
 
+      console.log(
+        "ShrinkMe Response:",
+        response.data
+      );
+
+      /*
+        important validation
+      */
+
+      if (
+        !response.data ||
+        typeof response.data !== "string"
+      ) {
+
+        return res.status(500).json({
+          success: false,
+          message:
+            "Invalid shortlink response",
+        });
+
+      }
+
       return res.status(200).json({
         success: true,
-
-        shortlink:
-          response.data,
+        shortlink: response.data,
       });
 
     } catch (error) {
 
-      console.log(error);
+      console.log(
+        "SHORTLINK ERROR:"
+      );
+
+      console.log(
+        error.response?.data ||
+        error.message
+      );
 
       return res.status(500).json({
         success: false,
-
         message:
           "Failed to generate shortlink",
       });
-
-    }
-
-  };
-
-export const completeShortlink =
-  async (req, res) => {
-
-    try {
-
-      const { sessionId } =
-        req.params;
-
-      const session =
-        await ShortlinkSession.findOne({
-          sessionId,
-        });
-
-      if (!session) {
-
-        return res
-          .status(404)
-          .send(
-            "Invalid session"
-          );
-
-      }
-
-      if (
-        session.status ===
-        "completed"
-      ) {
-
-        return res.send(
-          "Reward already claimed"
-        );
-
-      }
-
-      const user =
-        await User.findById(
-          session.userId
-        );
-
-      if (!user) {
-
-        return res
-          .status(404)
-          .send(
-            "User not found"
-          );
-
-      }
-
-      user.points +=
-        session.reward;
-
-      await user.save();
-
-      session.status =
-        "completed";
-
-      await session.save();
-
-      return res.redirect(
-        "https://revadoo.onrender.com/shortlinks"
-      );
-
-    } catch (error) {
-
-      console.log(error);
-
-      return res
-        .status(500)
-        .send(
-          "Server Error"
-        );
 
     }
 
