@@ -4,7 +4,16 @@ import { useState } from "react";
 
 export default function ShortlinkCard({ link }) {
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
+
+  /*
+    prevent undefined crash
+  */
+
+  if (!link) {
+    return null;
+  }
 
   const handleOpen = async () => {
 
@@ -13,20 +22,26 @@ export default function ShortlinkCard({ link }) {
       setLoading(true);
 
       const res = await fetch(
-        "http://localhost:5000/api/shortlink/start",
+        `${import.meta.env.VITE_API_URL}/api/shortlink/start`,
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
         }
       );
 
-      const data = await res.json();
+      const data =
+        await res.json();
 
       console.log(data);
 
-      if (data.success && data.shortlink) {
+      if (
+        data.success &&
+        data.shortlink
+      ) {
 
         window.location.href =
           data.shortlink;
@@ -73,11 +88,17 @@ export default function ShortlinkCard({ link }) {
       </h2>
 
       <p className="text-zinc-500 mt-3">
-        Reward: {link.reward} Points
+        Reward:
+        {" "}
+        {link.reward}
+        {" "}
+        Points
       </p>
 
       <p className="text-zinc-500 mt-1">
-        Time: {link.time}
+        Time:
+        {" "}
+        {link.time}
       </p>
 
       <button
